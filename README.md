@@ -1,3 +1,3 @@
 # FireFuse
 
-A description of this package.
+Fuse protocol applied to the Firebase Firestore API

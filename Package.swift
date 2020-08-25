@@ -4,25 +4,27 @@
 import PackageDescription
 
 let package = Package(
-    name: "FireFuse",
-    products: [
-        // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(
-            name: "FireFuse",
-            targets: ["FireFuse"]),
-    ],
-    dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "FireFuse",
-            dependencies: []),
-        .testTarget(
-            name: "FireFuseTests",
-            dependencies: ["FireFuse"]),
-    ]
+  name: "FireFuse",
+  platforms: [.iOS("13.0"), .macOS("10.15")],
+  products: [
+    // Products define the executables and libraries a package produces, and make them visible to other packages.
+    .library(
+      name: "FireFuse",
+      targets: ["FireFuse"]),
+  ],
+  dependencies: [
+    // Dependencies declare other packages that this package depends on.
+    .package(url: "git@github.com:nidegen/Fuse", from: "0.1.12"),
+    .package(name: "Firebase", url: "git@github.com:firebase/firebase-ios-sdk", .branch("6.31-spm-beta")),
+  ],
+  targets: [
+    // Targets are the basic building blocks of a package. A target can define a module or a test suite.
+    // Targets can depend on other targets in this package, and on products in packages this package depends on.
+    .target(
+      name: "FireFuse",
+      dependencies: ["Fuse", "Firebase", .product(name: "FirebaseFirestore", package: "Firebase")]),
+    .testTarget(
+      name: "FireFuseTests",
+      dependencies: ["FireFuse"]),
+  ]
 )
