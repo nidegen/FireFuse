@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/firebase/abseil-cpp.git",
         "state": {
           "branch": null,
-          "revision": "d30bd7751ce343a05fca6413de0dec062163e5e9",
+          "revision": "8ddf129163673642a339d7980327bcb2c117a28e",
           "version": null
         }
       },
@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/firebase/boringssl.git",
         "state": {
           "branch": null,
-          "revision": "897ffb6fbb5a5ea149216d664ce8b04d77e3df22",
+          "revision": "d3275d3c77a63746f869a092a1a2a014cf0e5b9a",
           "version": null
         }
       },
@@ -23,18 +23,9 @@
         "package": "Firebase",
         "repositoryURL": "git@github.com:firebase/firebase-ios-sdk",
         "state": {
-          "branch": "6.31-spm-beta",
-          "revision": "a4020c5dfc447183aebd9daac2708db266aa2929",
+          "branch": "6.34-spm-beta",
+          "revision": "1a3a8f41a086b0217681c96b7049f0252b5969fc",
           "version": null
-        }
-      },
-      {
-        "package": "Fuse",
-        "repositoryURL": "git@github.com:nidegen/Fuse",
-        "state": {
-          "branch": null,
-          "revision": "38ce7150904a3d67d462a5ef368a175ec8a60ef8",
-          "version": "0.1.12"
         }
       },
       {
@@ -42,7 +33,7 @@
         "repositoryURL": "https://github.com/firebase/grpc.git",
         "state": {
           "branch": null,
-          "revision": "cae939a8823bbc39912aa2990cf95e29ace381b3",
+          "revision": "b22bc5256665ff2f1763505631df0ee60378b083",
           "version": null
         }
       },
@@ -60,7 +51,7 @@
         "repositoryURL": "https://github.com/firebase/leveldb.git",
         "state": {
           "branch": null,
-          "revision": "3f046978ecffd57ea6eb9a0897cc8a3b45b44df8",
+          "revision": "fa1f25f296a766e5a789c4dacd4798dea798b2c2",
           "version": null
         }
       },
@@ -69,7 +60,7 @@
         "repositoryURL": "https://github.com/nanopb/nanopb.git",
         "state": {
           "branch": null,
-          "revision": "3cfa21200eea012d8765239ad4c50d8a36c283f1",
+          "revision": "8119dfe5631f2616d11e50ead95448d12e816062",
           "version": null
         }
       },
@@ -78,8 +69,8 @@
         "repositoryURL": "https://github.com/google/promises.git",
         "state": {
           "branch": null,
-          "revision": "c5cdb6bdc2d3db8ef81e3bc71d55d31baf638837",
-          "version": "1.2.10"
+          "revision": "d8accebc8fa32f57196df191e733f946e955c549",
+          "version": "1.2.11"
         }
       }
     ]

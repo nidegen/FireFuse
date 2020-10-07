@@ -6,7 +6,7 @@
 //  Copyright © 2020 Nicolas Degen. All rights reserved.
 //
 
-import Firebase
+import FirebaseFirestore
 import Fuse
 
 func debugFatalError() {
@@ -24,7 +24,7 @@ public class DataBindingHandler: BindingHandler {
 }
 
 public class FireServer: FuseServer {
-  
+
   var database: DocumentReference {
     #if DEBUG
     return Firestore.firestore().collection("devel").document("0.0.1")
@@ -32,35 +32,10 @@ public class FireServer: FuseServer {
     return Firestore.firestore().collection("releases").document("0.0.1")
     #endif
   }
-
-  public func bind(toDataType type: Fusable.Type, completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
-    let handle = database.collection(type.typeId)
-      .addSnapshotListener { (snapshot, error) in
-        guard let querySnapshot = snapshot else { return }
-        var newData = [Fusable]()
-        for documentSnapshot in querySnapshot.documents {
-          if let jsonData = documentSnapshot.jsonData() {
-            do {
-              let data = try type.decode(fromData: jsonData)
-              newData.append(data)
-            } catch {
-              print(error.localizedDescription)
-              jsonData.printUtf8()
-              debugFatalError()
-            }
-          }
-        }
-        completion(newData)
-    }
-    let handler = DataBindingHandler()
-    handler.observerHandle = handle
-    return handler
-  }
   
   public func bind(toIds ids: [Id], dataOfType type: Fusable.Type, completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
     if ids.isEmpty { return DataBindingHandler() }
     let handle = database.collection(type.typeId)
-      .whereField("id", in: ids)
       .addSnapshotListener { (snapshot, error) in
         guard let querySnapshot = snapshot else { return }
         var newData = [Fusable]()
@@ -77,69 +52,27 @@ public class FireServer: FuseServer {
           }
         }
         completion(newData)
-    }
+      }
     let handler = DataBindingHandler()
     handler.observerHandle = handle
     return handler
   }
   
-  public func bind(dataOfType type: Fusable.Type, whereDataField dataField: String, contains value: Any, completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
+
+  
+  public func bind(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
     let handle = database.collection(type.typeId)
-      .whereField(dataField, arrayContains: value)
-      .addSnapshotListener { (snapshot, error) in
-        guard let querySnapshot = snapshot else { return }
-        var newData = [Fusable]()
-        for documentSnapshot in querySnapshot.documents {
-          if let jsonData = documentSnapshot.jsonData() {
-            do {
-              let data = try type.decode(fromData: jsonData)
-              newData.append(data)
-            } catch {
-              print(error.localizedDescription)
-              jsonData.printUtf8()
-              debugFatalError()
-            }
-          }
-        }
-        completion(newData)
+    var query: Query?
+    
+    for constraint in constraints {
+      if let tmp = query {
+        query = tmp.applyConstraint(constraint)
+      } else {
+        query = handle.applyConstraint(constraint)
+      }
     }
-    let handler = DataBindingHandler()
-    handler.observerHandle = handle
-    return handler
-  }
-  
-  public func bind(dataOfType type: Fusable.Type, whereDataField dataField: String, isContainedIn values: [Any], orderField: String?, descendingOrder: Bool, completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
-    let handle = database.collection(type.typeId)
-      .whereField(dataField, in: values)
-      .addSnapshotListener { (snapshot, error) in
-        guard let querySnapshot = snapshot else { return }
-        var newData = [Fusable]()
-        for documentSnapshot in querySnapshot.documents {
-          if let jsonData = documentSnapshot.jsonData() {
-            do {
-              let data = try type.decode(fromData: jsonData)
-              newData.append(data)
-            } catch {
-              print(error.localizedDescription)
-              jsonData.printUtf8()
-              debugFatalError()
-            }
-          }
-        }
-        completion(newData)
-    }
-    let handler = DataBindingHandler()
-    handler.observerHandle = handle
-    return handler
-  }
-  
-  public func bind(dataOfType type: Fusable.Type, whereDataField dataField: String, isEqualTo value: Any, orderField: String? = nil, descendingOrder: Bool = true, completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
-    var tmp = database.collection(type.typeId)
-      .whereField(dataField, isEqualTo: value)
-    if let orderField = orderField {
-      tmp = tmp.order(by: orderField, descending: descendingOrder)
-    }
-    let handle = tmp.addSnapshotListener { (snapshot, error) in
+    
+    let callback: (QuerySnapshot?, Error?)->() = { (snapshot, error) in
       guard let querySnapshot = snapshot else { return }
       var newData = [Fusable]()
       for documentSnapshot in querySnapshot.documents {
@@ -156,8 +89,13 @@ public class FireServer: FuseServer {
       }
       completion(newData)
     }
+    
     let handler = DataBindingHandler()
-    handler.observerHandle = handle
+    if let query = query {
+      handler.observerHandle = query.addSnapshotListener(callback)
+    } else {
+      handler.observerHandle = handle.addSnapshotListener(callback)
+    }
     return handler
   }
   
@@ -219,7 +157,8 @@ public class FireServer: FuseServer {
     }
   }
   
-  public func get(dataOfType type: Fusable.Type, whereDataField dataField: String, isEqualTo value: Any, orderField: String?, descendingOrder: Bool, completion: @escaping ([Fusable]) -> ()) {
+  
+  public func get(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) {
     let callback: (QuerySnapshot?, Error?)->() = { (snapshot, error) in
       guard let query = snapshot else { return }
       var storables = [Fusable]()
@@ -234,16 +173,20 @@ public class FireServer: FuseServer {
       completion(storables)
     }
     
+    let handle = database.collection(type.typeId)
+    var query: Query?
     
-    if let orderField = orderField {
-      database.collection(type.typeId)
-        .whereField(dataField, isEqualTo: value)
-        .order(by: orderField, descending: descendingOrder)
-        .getDocuments(completion: callback)
+    for constraint in constraints {
+      if let tmp = query {
+        query = tmp.applyConstraint(constraint)
+      } else {
+        query = handle.applyConstraint(constraint)
+      }
+    }
+    if let query = query {
+      query.getDocuments(completion: callback)
     } else {
-      database.collection(type.typeId)
-        .whereField(dataField, isEqualTo: value)
-        .getDocuments(completion: callback)
+      handle.getDocuments(completion: callback)
     }
   }
   
@@ -293,6 +236,36 @@ extension DocumentSnapshot {
       return try? JSONSerialization.data(withJSONObject: data, options: [])
     }
     return nil
+  }
+}
+
+extension CollectionReference {
+  func applyConstraint(_ constraint: Constraint) -> Query? {
+    switch constraint.relation {
+    case .isEqual(let value):
+      return self.whereField(constraint.field, isEqualTo: value)
+    case .isContaining(let value):
+      return self.whereField(constraint.field, arrayContains: value)
+    case .isContainedIn(let values):
+      return self.whereField(constraint.field, in: values)
+    default:
+      return nil
+    }
+  }
+}
+
+extension Query {
+  func applyConstraint(_ constraint: Constraint) -> Query {
+    switch constraint.relation {
+    case .isEqual(let value):
+      return self.whereField(constraint.field, isEqualTo: value)
+    case .isContaining(let value):
+      return self.whereField(constraint.field, arrayContains: value)
+    case .isContainedIn(let values):
+      return self.whereField(constraint.field, in: values)
+    default:
+      return self
+    }
   }
 }
 
