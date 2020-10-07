@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "Fuse",
+        "repositoryURL": "git@github.com:nidegen/Fuse",
+        "state": {
+          "branch": "feature/constraints",
+          "revision": "5a9754a90ecba15bd83129f418bb799db61081b3",
+          "version": null
+        }
+      },
+      {
         "package": "gRPC",
         "repositoryURL": "https://github.com/firebase/grpc.git",
         "state": {
