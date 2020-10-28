@@ -33,33 +33,6 @@ public class FireServer: FuseServer {
     #endif
   }
   
-  public func bind(toIds ids: [Id], dataOfType type: Fusable.Type, completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
-    if ids.isEmpty { return DataBindingHandler() }
-    let handle = database.collection(type.typeId)
-      .addSnapshotListener { (snapshot, error) in
-        guard let querySnapshot = snapshot else { return }
-        var newData = [Fusable]()
-        for documentSnapshot in querySnapshot.documents {
-          if let jsonData = documentSnapshot.jsonData() {
-            do {
-              let data = try type.decode(fromData: jsonData)
-              newData.append(data)
-            } catch {
-              print(error.localizedDescription)
-              jsonData.printUtf8()
-              debugFatalError()
-            }
-          }
-        }
-        completion(newData)
-      }
-    let handler = DataBindingHandler()
-    handler.observerHandle = handle
-    return handler
-  }
-  
-
-  
   public func bind(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
     let handle = database.collection(type.typeId)
     var query: Query?

@@ -14,7 +14,7 @@ let package = Package(
   ],
   dependencies: [
     // Dependencies declare other packages that this package depends on.
-    .package(url: "git@github.com:nidegen/Fuse", .branch("feature/constraints")),
+    .package(url: "git@github.com:nidegen/Fuse", .branch("master")),
     .package(name: "Firebase", url: "git@github.com:firebase/firebase-ios-sdk", .branch("6.34-spm-beta")),
   ],
   targets: [

@@ -32,8 +32,8 @@
         "package": "Fuse",
         "repositoryURL": "git@github.com:nidegen/Fuse",
         "state": {
-          "branch": "feature/constraints",
-          "revision": "5a9754a90ecba15bd83129f418bb799db61081b3",
+          "branch": "master",
+          "revision": "d753347c6a44e0dd3bbbe8494601e5180bb882bc",
           "version": null
         }
       },
