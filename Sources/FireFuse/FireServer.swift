@@ -1,11 +1,3 @@
-//
-//  FireServer.swift
-//  FireFuse
-//
-//  Created by Nicolas Degen on 25.08.20.
-//  Copyright © 2020 Nicolas Degen. All rights reserved.
-//
-
 import FirebaseFirestore
 import Fuse
 
@@ -24,13 +16,17 @@ public class DataBindingHandler: BindingHandler {
 }
 
 public class FireServer: FuseServer {
+  var documentPath: String
+  
+  private init(path: String) {
+    let settings = FirestoreSettings()
+    settings.isPersistenceEnabled = true
+    documentPath = path
+    DefaultServerContainer.server = self
+  }
 
   var database: DocumentReference {
-    #if DEBUG
-    return Firestore.firestore().collection("devel").document("0.0.1")
-    #else
-    return Firestore.firestore().collection("releases").document("0.0.1")
-    #endif
+    return Firestore.firestore().document(documentPath)
   }
   
   public func bind(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
@@ -163,18 +159,30 @@ public class FireServer: FuseServer {
     }
   }
   
-  public func set(_ storables: [Fusable], completion: SetterCompletion) {
-    storables.forEach {
-      database.collection(type(of: $0).typeId).document($0.id).setData($0)
-    }
-  }
-  
-  public func set(_ storable: Fusable, completion: SetterCompletion) {
+  public func update(_ storable: Fusable, completion: FuseCompletion) {
     guard let dict = storable.parseDictionary() else { completion?(nil); return }
-    database.collection(type(of: storable).typeId).document(storable.id).setData(dict) { error in
+    database.collection(type(of: storable).typeId).document(storable.id).updateData(dict) { error in
       completion?(error)
     }
   }
+  
+  public func update(_ storables: [Fusable], completion: FuseCompletion) {
+    storables.forEach { update($0, completion: completion) }
+  }
+  
+  public func set(_ storables: [Fusable], merge: Bool, completion: FuseCompletion) {
+    storables.forEach {
+      set($0, merge: merge, completion: completion)
+    }
+  }
+  
+  public func set(_ storable: Fusable, merge: Bool, completion: FuseCompletion) {
+    guard let dict = storable.parseDictionary() else { completion?(nil); return }
+    database.collection(type(of: storable).typeId).document(storable.id).setData(dict, merge: merge) { error in
+      completion?(error)
+    }
+  }
+  
   
   func set(_ storable: Fusable) {
     database.collection(type(of: storable).typeId).document(storable.id).setData(storable)
@@ -185,14 +193,6 @@ public class FireServer: FuseServer {
     database.collection(type.typeId).document(id).delete { error in
       completion?(error)
     }
-  }
-  
-  static var shared = FireServer()
-  
-  private init() {
-    let settings = FirestoreSettings()
-    settings.isPersistenceEnabled = true
-    DefaultServerContainer.server = self
   }
 }
 

@@ -14,8 +14,8 @@ let package = Package(
   ],
   dependencies: [
     // Dependencies declare other packages that this package depends on.
-    .package(url: "git@github.com:nidegen/Fuse", .branch("master")),
-    .package(name: "Firebase", url: "git@github.com:firebase/firebase-ios-sdk", .branch("6.34-spm-beta")),
+    .package(url: "https://github.com/nidegen/Fuse", .branch("master")),
+    .package(name: "Firebase", url: "https://github.com/firebase/firebase-ios-sdk", from: "7.1.0"),
   ],
   targets: [
     // Targets are the basic building blocks of a package. A target can define a module or a test suite.

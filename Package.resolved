@@ -3,47 +3,47 @@
     "pins": [
       {
         "package": "abseil",
-        "repositoryURL": "https://github.com/firebase/abseil-cpp.git",
+        "repositoryURL": "https://github.com/firebase/abseil-cpp-SwiftPM.git",
         "state": {
           "branch": null,
-          "revision": "8ddf129163673642a339d7980327bcb2c117a28e",
-          "version": null
+          "revision": "05d8107f2971a37e6c77245b7c4c6b0a7e97bc99",
+          "version": "0.20200225.0"
         }
       },
       {
         "package": "BoringSSL-GRPC",
-        "repositoryURL": "https://github.com/firebase/boringssl.git",
+        "repositoryURL": "https://github.com/firebase/boringssl-SwiftPM.git",
         "state": {
           "branch": null,
-          "revision": "d3275d3c77a63746f869a092a1a2a014cf0e5b9a",
-          "version": null
+          "revision": "7bcafa2660bc58715c39637494550d1ed7cd7229",
+          "version": "0.0.7"
         }
       },
       {
         "package": "Firebase",
-        "repositoryURL": "git@github.com:firebase/firebase-ios-sdk",
+        "repositoryURL": "https://github.com/firebase/firebase-ios-sdk",
         "state": {
-          "branch": "6.34-spm-beta",
-          "revision": "1a3a8f41a086b0217681c96b7049f0252b5969fc",
-          "version": null
+          "branch": null,
+          "revision": "c227152e84ad215eed0285c9df62f39e0406e455",
+          "version": "7.1.0"
         }
       },
       {
         "package": "Fuse",
-        "repositoryURL": "git@github.com:nidegen/Fuse",
+        "repositoryURL": "https://github.com/nidegen/Fuse",
         "state": {
           "branch": "master",
-          "revision": "d753347c6a44e0dd3bbbe8494601e5180bb882bc",
+          "revision": "fe1ff378c68f341b2aa2e47bab33fdbb5db6ebc1",
           "version": null
         }
       },
       {
         "package": "gRPC",
-        "repositoryURL": "https://github.com/firebase/grpc.git",
+        "repositoryURL": "https://github.com/firebase/grpc-SwiftPM.git",
         "state": {
           "branch": null,
-          "revision": "b22bc5256665ff2f1763505631df0ee60378b083",
-          "version": null
+          "revision": "91b62619e6c83bc5f1b99d9d60fe46b2862d3a5a",
+          "version": "1.28.2"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/google/gtm-session-fetcher.git",
         "state": {
           "branch": null,
-          "revision": "1d4ef59335abfccee6150ca5c9b436c17c801fa9",
-          "version": "1.4.0"
+          "revision": "91ed3d188eb95705fef3c249453b81f32dc557d1",
+          "version": "1.5.0"
         }
       },
       {
@@ -61,16 +61,16 @@
         "state": {
           "branch": null,
           "revision": "fa1f25f296a766e5a789c4dacd4798dea798b2c2",
-          "version": null
+          "version": "1.22.1"
         }
       },
       {
         "package": "nanopb",
-        "repositoryURL": "https://github.com/nanopb/nanopb.git",
+        "repositoryURL": "https://github.com/firebase/nanopb.git",
         "state": {
           "branch": null,
           "revision": "8119dfe5631f2616d11e50ead95448d12e816062",
-          "version": null
+          "version": "2.30906.0"
         }
       },
       {
