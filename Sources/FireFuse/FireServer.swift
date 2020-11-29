@@ -1,5 +1,6 @@
 import FirebaseFirestore
 import Fuse
+import FuseMock
 
 func debugFatalError() {
   #if DEBUG
@@ -16,22 +17,32 @@ public class DataBindingHandler: BindingHandler {
 }
 
 public class FireServer: FuseServer {
-  var documentPath: String
+  var database: DocumentReference
   
-  private init(path: String) {
-    let settings = FirestoreSettings()
-    settings.isPersistenceEnabled = true
-    documentPath = path
-    DefaultServerContainer.server = self
-  }
+  public static var mock = MockServer()
 
-  var database: DocumentReference {
-    return Firestore.firestore().document(documentPath)
+  public init(path: String, host: String? = nil, sslEnabled: Bool = true, persistence: Bool = true) {
+    
+    let firestore = Firestore.firestore()
+    let settings = firestore.settings
+    
+    if let host = host {
+      settings.host = host
+    }
+    settings.isSSLEnabled = sslEnabled
+    
+    settings.isPersistenceEnabled = persistence
+    firestore.settings = settings
+    self.database = firestore.document(path)
   }
   
   public func bind(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
     let handle = database.collection(type.typeId)
     var query: Query?
+    
+    if constraints.isEmpty {
+      return DataBindingHandler()
+    }
     
     for constraint in constraints {
       if let tmp = query {
@@ -93,6 +104,7 @@ public class FireServer: FuseServer {
           completion(storable)
           return
         } else {
+          jsonData.printUtf8()
           debugFatalError()
         }
       }
@@ -116,6 +128,7 @@ public class FireServer: FuseServer {
           if let storable = try? type.decode(fromData: jsonData) {
             storables.append(storable)
           } else {
+            jsonData.printUtf8()
             debugFatalError()
           }
         }
@@ -128,6 +141,9 @@ public class FireServer: FuseServer {
   
   
   public func get(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) {
+    if constraints.isEmpty {
+      return
+    }
     let callback: (QuerySnapshot?, Error?)->() = { (snapshot, error) in
       guard let query = snapshot else { return }
       var storables = [Fusable]()
@@ -184,7 +200,7 @@ public class FireServer: FuseServer {
   }
   
   
-  func set(_ storable: Fusable) {
+  public func set(_ storable: Fusable) {
     database.collection(type(of: storable).typeId).document(storable.id).setData(storable)
   }
   
@@ -220,7 +236,7 @@ extension CollectionReference {
     case .isContaining(let value):
       return self.whereField(constraint.field, arrayContains: value)
     case .isContainedIn(let values):
-      return self.whereField(constraint.field, in: values)
+      return self.whereField(constraint.field, in: Array(values.prefix(10)))
     default:
       return nil
     }
