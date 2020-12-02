@@ -32,9 +32,9 @@
         "package": "Fuse",
         "repositoryURL": "https://github.com/nidegen/Fuse",
         "state": {
-          "branch": "master",
-          "revision": "fe1ff378c68f341b2aa2e47bab33fdbb5db6ebc1",
-          "version": null
+          "branch": null,
+          "revision": "a439740f2822da4b74307b875604256e83f50969",
+          "version": "0.2.0"
         }
       },
       {

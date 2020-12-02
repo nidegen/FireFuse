@@ -182,6 +182,15 @@ public class FireServer: FuseServer {
     }
   }
   
+  // Currently only supports tld fields
+  public func update(_ storable: Fusable, on fields: [String], completion: FuseCompletion) {
+    guard let dict = storable.parseDictionary() else { completion?(nil); return }
+    let filtered = dict.filter { fields.contains($0.key) }
+    database.collection(type(of: storable).typeId).document(storable.id).updateData(filtered) { error in
+      completion?(error)
+    }
+  }
+  
   public func update(_ storables: [Fusable], completion: FuseCompletion) {
     storables.forEach { update($0, completion: completion) }
   }
