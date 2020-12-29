@@ -21,7 +21,7 @@ public class FireServer: FuseServer {
   
   public static var mock = MockServer()
 
-  public init(path: String, host: String? = nil, sslEnabled: Bool = true, persistence: Bool = true) {
+  public init(path: String = "", host: String? = nil, sslEnabled: Bool = true, persistence: Bool = true) {
     
     let firestore = Firestore.firestore()
     let settings = firestore.settings
@@ -176,7 +176,7 @@ public class FireServer: FuseServer {
   }
   
   public func update(_ storable: Fusable, completion: FuseCompletion) {
-    guard let dict = storable.parseDictionary() else { completion?(nil); return }
+    guard let dict = storable.dictionaryDroppingId else { completion?(nil); return }
     database.collection(type(of: storable).typeId).document(storable.id).updateData(dict) { error in
       completion?(error)
     }
@@ -184,7 +184,7 @@ public class FireServer: FuseServer {
   
   // Currently only supports tld fields
   public func update(_ storable: Fusable, on fields: [String], completion: FuseCompletion) {
-    guard let dict = storable.parseDictionary() else { completion?(nil); return }
+    guard let dict = storable.dictionaryDroppingId else { completion?(nil); return }
     let filtered = dict.filter { fields.contains($0.key) }
     database.collection(type(of: storable).typeId).document(storable.id).updateData(filtered) { error in
       completion?(error)
@@ -202,7 +202,7 @@ public class FireServer: FuseServer {
   }
   
   public func set(_ storable: Fusable, merge: Bool, completion: FuseCompletion) {
-    guard let dict = storable.parseDictionary() else { completion?(nil); return }
+    guard let dict = storable.dictionaryDroppingId else { completion?(nil); return }
     database.collection(type(of: storable).typeId).document(storable.id).setData(dict, merge: merge) { error in
       completion?(error)
     }
@@ -231,6 +231,7 @@ public extension Data {
 extension DocumentSnapshot {
   func jsonData() -> Data? {
     if let data = self.data() as NSDictionary?  {
+      data.setValue(self.documentID, forKey: "id")
       return try? JSONSerialization.data(withJSONObject: data, options: [])
     }
     return nil
@@ -267,9 +268,18 @@ extension Query {
   }
 }
 
+extension Fusable {
+  #warning("Use extension of provided by future Fuse release")
+  var dictionaryDroppingId: [String: Any]? {
+    var dict = self.parseDictionary()
+    dict?["id"] = nil
+    return dict
+  }
+}
+
 extension DocumentReference {
   func setData(_ encodableDocument: Fusable) {
-    guard let dict = encodableDocument.parseDictionary() else { return }
+    guard let dict = encodableDocument.dictionaryDroppingId else { return }
     self.setData(dict)
   }
 }
