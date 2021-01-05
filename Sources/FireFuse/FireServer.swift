@@ -36,7 +36,7 @@ public class FireServer: FuseServer {
     self.database = firestore.document(path)
   }
   
-  public func bind(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) -> BindingHandler {
+  public func bind(dataType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping GetArrayCompletion) -> BindingHandler {
     let handle = database.collection(type.typeId)
     var query: Query?
     
@@ -53,6 +53,9 @@ public class FireServer: FuseServer {
     }
     
     let callback: (QuerySnapshot?, Error?)->() = { (snapshot, error) in
+      if let error = error {
+        completion(.failure(error))
+      }
       guard let querySnapshot = snapshot else { return }
       var newData = [Fusable]()
       for documentSnapshot in querySnapshot.documents {
@@ -67,7 +70,7 @@ public class FireServer: FuseServer {
           }
         }
       }
-      completion(newData)
+      completion(.success(newData))
     }
     
     let handler = DataBindingHandler()
@@ -79,12 +82,14 @@ public class FireServer: FuseServer {
     return handler
   }
   
-  public func bind(toId id: Id, ofDataType type: Fusable.Type, completion: @escaping (Fusable?) -> ()) -> BindingHandler {
+  public func bind(toId id: Id, ofDataType type: Fusable.Type, completion: @escaping GetValueCompletion) -> BindingHandler {
     if id == "" { return DataBindingHandler() }
     let handle = database.collection(type.typeId).document(id).addSnapshotListener { (snapshot, error) in
-      if let jsonData = snapshot?.jsonData() {
+      if let error = error {
+        completion(.failure(error))
+      } else if let jsonData = snapshot?.jsonData() {
         if let data = try? type.decode(fromData: jsonData) {
-          completion(data)
+          completion(.success(data))
         } else {
           jsonData.printUtf8()
           debugFatalError()
@@ -96,19 +101,22 @@ public class FireServer: FuseServer {
     return handler
   }
   
-  public func get(id: Id, ofDataType type: Fusable.Type, completion: @escaping (Fusable?) -> ()) {
-    if id == "" { completion(nil); return }
-    database.collection(type.typeId).document(id).getDocument { (snapshot, error) in
+  public func get(id: Id, ofDataType type: Fusable.Type, source: DataSource, completion: @escaping GetValueCompletion) {
+    if id == "" { completion(.success(nil)); return }
+    database.collection(type.typeId).document(id)
+      .getDocument(source: source.firebaseSource) { (snapshot, error) in
       if let jsonData = snapshot?.jsonData() {
         if let storable = try? type.decode(fromData: jsonData) {
-          completion(storable)
+          completion(.success(storable))
           return
         } else {
           jsonData.printUtf8()
           debugFatalError()
         }
+      } else if let error = error {
+        completion(.failure(error))
       }
-      completion(nil)
+      completion(.success(nil))
     }
   }
   
@@ -122,7 +130,8 @@ public class FireServer: FuseServer {
     
     for id in ids {
       if id == "" { continue }
-      database.collection(type.typeId).document(id).getDocument { (snapshot, error) in
+      database.collection(type.typeId).document(id)
+        .getDocument { (snapshot, error) in
         number -= 1
         if let jsonData = snapshot?.jsonData() {
           if let storable = try? type.decode(fromData: jsonData) {
@@ -140,11 +149,14 @@ public class FireServer: FuseServer {
   }
   
   
-  public func get(dataOfType type: Fusable.Type, matching constraints: [Constraint], completion: @escaping ([Fusable]) -> ()) {
+  public func get(dataType type: Fusable.Type, matching constraints: [Constraint], source: DataSource, completion: @escaping GetArrayCompletion) {
     if constraints.isEmpty {
       return
     }
     let callback: (QuerySnapshot?, Error?)->() = { (snapshot, error) in
+      if let error = error {
+        completion(.failure(error))
+      }
       guard let query = snapshot else { return }
       var storables = [Fusable]()
       for jsonData in query.documents.compactMap({$0.jsonData()}) {
@@ -155,7 +167,7 @@ public class FireServer: FuseServer {
           debugFatalError()
         }
       }
-      completion(storables)
+      completion(.success(storables))
     }
     
     let handle = database.collection(type.typeId)
@@ -169,13 +181,13 @@ public class FireServer: FuseServer {
       }
     }
     if let query = query {
-      query.getDocuments(completion: callback)
+      query.getDocuments(source: source.firebaseSource, completion: callback)
     } else {
-      handle.getDocuments(completion: callback)
+      handle.getDocuments(source: source.firebaseSource, completion: callback)
     }
   }
   
-  public func update(_ storable: Fusable, completion: FuseCompletion) {
+  public func update(_ storable: Fusable, completion: SetCompletion) {
     guard let dict = storable.dictionaryDroppingId else { completion?(nil); return }
     database.collection(type(of: storable).typeId).document(storable.id).updateData(dict) { error in
       completion?(error)
@@ -183,7 +195,7 @@ public class FireServer: FuseServer {
   }
   
   // Currently only supports tld fields
-  public func update(_ storable: Fusable, on fields: [String], completion: FuseCompletion) {
+  public func update(_ storable: Fusable, on fields: [String], completion: SetCompletion) {
     guard let dict = storable.dictionaryDroppingId else { completion?(nil); return }
     let filtered = dict.filter { fields.contains($0.key) }
     database.collection(type(of: storable).typeId).document(storable.id).updateData(filtered) { error in
@@ -191,17 +203,17 @@ public class FireServer: FuseServer {
     }
   }
   
-  public func update(_ storables: [Fusable], completion: FuseCompletion) {
+  public func update(_ storables: [Fusable], completion: SetCompletion) {
     storables.forEach { update($0, completion: completion) }
   }
   
-  public func set(_ storables: [Fusable], merge: Bool, completion: FuseCompletion) {
+  public func set(_ storables: [Fusable], merge: Bool, completion: SetCompletion) {
     storables.forEach {
       set($0, merge: merge, completion: completion)
     }
   }
   
-  public func set(_ storable: Fusable, merge: Bool, completion: FuseCompletion) {
+  public func set(_ storable: Fusable, merge: Bool, completion: SetCompletion) {
     guard let dict = storable.dictionaryDroppingId else { completion?(nil); return }
     database.collection(type(of: storable).typeId).document(storable.id).setData(dict, merge: merge) { error in
       completion?(error)
@@ -281,5 +293,18 @@ extension DocumentReference {
   func setData(_ encodableDocument: Fusable) {
     guard let dict = encodableDocument.dictionaryDroppingId else { return }
     self.setData(dict)
+  }
+}
+
+extension Fuse.DataSource {
+  var firebaseSource: FirestoreSource {
+    switch self {
+    case .cacheOnly:
+      return .cache
+    case .serverOnly:
+      return .server
+    case .serverOrCache:
+      return .default
+    }
   }
 }
