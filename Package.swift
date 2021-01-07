@@ -14,7 +14,7 @@ let package = Package(
   ],
   dependencies: [
     // Dependencies declare other packages that this package depends on.
-    .package(url: "https://github.com/nidegen/Fuse", from: "0.3.0"),
+    .package(url: "https://github.com/nidegen/Fuse", from: "0.3.1"),
     .package(name: "Firebase", url: "https://github.com/firebase/firebase-ios-sdk", from: "7.3.0"),
   ],
   targets: [
@@ -22,7 +22,12 @@ let package = Package(
     // Targets can depend on other targets in this package, and on products in packages this package depends on.
     .target(
       name: "FireFuse",
-      dependencies: ["Fuse", .product(name: "FirebaseFirestore", package: "Firebase")]),
+      dependencies: [
+        "Fuse",
+        .product(name: "FirebaseFirestore", package: "Firebase"),
+        .product(name: "FirebaseFirestoreSwift-Beta", package: "Firebase"),
+      ]
+    ),
     .testTarget(
       name: "FireFuseTests",
       dependencies: ["FireFuse"]),

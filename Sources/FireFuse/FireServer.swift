@@ -1,4 +1,5 @@
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 import Fuse
 import FuseMock
 
