@@ -253,13 +253,17 @@ extension DocumentSnapshot {
 
 extension CollectionReference {
   func applyConstraint(_ constraint: Constraint) -> Query? {
+    var field = FieldPath([constraint.field])
+    if constraint.field == "id" {
+      field = FieldPath.documentID()
+    }
     switch constraint.relation {
     case .isEqual(let value):
-      return self.whereField(constraint.field, isEqualTo: value)
+      return self.whereField(field, isEqualTo: value)
     case .isContaining(let value):
-      return self.whereField(constraint.field, arrayContains: value)
+      return self.whereField(field, arrayContains: value)
     case .isContainedIn(let values):
-      return self.whereField(constraint.field, in: Array(values.prefix(10)))
+      return self.whereField(field, in: Array(values.prefix(10)))
     default:
       return nil
     }
@@ -268,13 +272,17 @@ extension CollectionReference {
 
 extension Query {
   func applyConstraint(_ constraint: Constraint) -> Query {
+    var field = FieldPath([constraint.field])
+    if constraint.field == "id" {
+      field = FieldPath.documentID()
+    }
     switch constraint.relation {
     case .isEqual(let value):
-      return self.whereField(constraint.field, isEqualTo: value)
+      return self.whereField(field, isEqualTo: value)
     case .isContaining(let value):
-      return self.whereField(constraint.field, arrayContains: value)
+      return self.whereField(field, arrayContains: value)
     case .isContainedIn(let values):
-      return self.whereField(constraint.field, in: values)
+      return self.whereField(field, in: values)
     default:
       return self
     }
