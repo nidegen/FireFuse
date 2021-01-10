@@ -208,6 +208,10 @@ public class FireServer: FuseServer {
     storables.forEach { update($0, completion: completion) }
   }
   
+  public func increment<T:Fusable>(fusable: T, field: String, value: Int64) {
+    database.collection(type(of: fusable).typeId).document(fusable.id).updateData([field: FieldValue.increment(value)])
+  }
+  
   public func set(_ storables: [Fusable], merge: Bool, completion: SetCompletion) {
     storables.forEach {
       set($0, merge: merge, completion: completion)
@@ -290,7 +294,7 @@ extension Query {
 }
 
 extension Fusable {
-  #warning("Use extension of provided by future Fuse release")
+  #warning("Use extension provided by future Fuse release")
   var dictionaryDroppingId: [String: Any]? {
     var dict = self.parseDictionary()
     dict?["id"] = nil
