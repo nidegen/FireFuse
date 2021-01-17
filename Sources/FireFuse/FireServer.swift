@@ -249,9 +249,16 @@ extension DocumentSnapshot {
   }
 }
 
+extension Constraint {
+  var fieldPath: FieldPath {
+    let pathComponents = field.split{$0 == "."}.map(String.init)
+    return FieldPath(pathComponents)
+  }
+}
+
 extension CollectionReference {
   func applyConstraint(_ constraint: Constraint) -> Query? {
-    var field = FieldPath([constraint.field])
+    var field = constraint.fieldPath
     if constraint.field == "id" {
       field = FieldPath.documentID()
     }
@@ -272,7 +279,7 @@ extension CollectionReference {
 
 extension Query {
   func applyConstraint(_ constraint: Constraint) -> Query {
-    var field = FieldPath([constraint.field])
+    var field = constraint.fieldPath
     if constraint.field == "id" {
       field = FieldPath.documentID()
     }
