@@ -41,10 +41,6 @@ public class FireServer: FuseServer {
     let handle = database.collection(type.typeId)
     var query: Query?
     
-    if constraints.isEmpty {
-      return DataBindingHandler()
-    }
-    
     for constraint in constraints {
       if let tmp = query {
         query = tmp.applyConstraint(constraint)
@@ -151,9 +147,7 @@ public class FireServer: FuseServer {
   
   
   public func get(dataType type: Fusable.Type, matching constraints: [Constraint], source: DataSource, completion: @escaping GetArrayCompletion) {
-    if constraints.isEmpty {
-      return
-    }
+
     let callback: (QuerySnapshot?, Error?)->() = { (snapshot, error) in
       if let error = error {
         completion(.failure(error))
