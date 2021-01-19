@@ -268,6 +268,9 @@ extension CollectionReference {
     case .isContaining(let value):
       return self.whereField(field, arrayContains: value)
     case .isContainedIn(let values):
+      if values.isEmpty {
+        return self.limit(to: 0)
+      }
       return self.whereField(field, in: Array(values.prefix(10)))
     case .ordered(ascending: let ascending):
       return self.order(by: field, descending: !ascending)
@@ -289,6 +292,9 @@ extension Query {
     case .isContaining(let value):
       return self.whereField(field, arrayContains: value)
     case .isContainedIn(let values):
+      if values.isEmpty {
+        return self.limit(to: 0)
+      }
       return self.whereField(field, in: values)
     case .ordered(ascending: let ascending):
       return self.order(by: field, descending: !ascending)
