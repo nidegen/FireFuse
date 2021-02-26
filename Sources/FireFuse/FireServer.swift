@@ -304,15 +304,6 @@ extension Query {
   }
 }
 
-extension Fusable {
-  #warning("Use extension provided by future Fuse release")
-  var dictionaryDroppingId: [String: Any]? {
-    var dict = self.parseDictionary()
-    dict?["id"] = nil
-    return dict
-  }
-}
-
 extension DocumentReference {
   func setData(_ encodableDocument: Fusable) {
     guard let dict = encodableDocument.dictionaryDroppingId else { return }
