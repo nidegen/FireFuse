@@ -10,11 +10,18 @@ func debugFatalError() {
 }
 
 public class DataBindingHandler: BindingHandler {
+  public var isActive = false
+  
   public func remove() {
     observerHandle?.remove()
+    isActive = false
   }
   
-  var observerHandle: ListenerRegistration?
+  var observerHandle: ListenerRegistration? {
+    didSet {
+      isActive = observerHandle != nil
+    }
+  }
 }
 
 public class FireServer: FuseServer {
