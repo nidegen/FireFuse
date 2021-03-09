@@ -213,6 +213,14 @@ public class FireServer: FuseServer {
     database.collection(type(of: fusable).typeId).document(fusable.id).updateData([field: FieldValue.increment(value)])
   }
   
+  public func arrayUnion<T>(fusable: T, field: String, value: [Any]) where T : Fusable {
+      database.collection(type(of: fusable).typeId).document(fusable.id).updateData([field: FieldValue.arrayUnion(value)])
+  }
+  
+  public func arrayRemove<T>(fusable: T, field: String, value: [Any]) where T : Fusable {
+      database.collection(type(of: fusable).typeId).document(fusable.id).updateData([field: FieldValue.arrayRemove(value)])
+  }
+  
   public func set(_ storables: [Fusable], merge: Bool, completion: SetCompletion) {
     storables.forEach {
       set($0, merge: merge, completion: completion)
