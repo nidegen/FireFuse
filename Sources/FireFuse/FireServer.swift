@@ -92,9 +92,11 @@ public class FireServer: FuseServer {
       if let error = error {
         completion(.failure(error))
       } else if let jsonData = snapshot?.jsonData() {
-        if let data = try? type.decode(fromData: jsonData) {
+        do {
+          let data = try type.decode(fromData: jsonData)
           completion(.success(data))
-        } else {
+        } catch {
+          print(error.localizedDescription)
           jsonData.printUtf8()
           debugFatalError()
         }
@@ -110,10 +112,12 @@ public class FireServer: FuseServer {
     database.collection(type.typeId).document(id)
       .getDocument(source: source.firebaseSource) { (snapshot, error) in
       if let jsonData = snapshot?.jsonData() {
-        if let storable = try? type.decode(fromData: jsonData) {
-          completion(.success(storable))
+        do {
+          let data = try type.decode(fromData: jsonData)
+          completion(.success(data))
           return
-        } else {
+        } catch {
+          print(error.localizedDescription)
           jsonData.printUtf8()
           debugFatalError()
         }
@@ -138,9 +142,11 @@ public class FireServer: FuseServer {
         .getDocument { (snapshot, error) in
         number -= 1
         if let jsonData = snapshot?.jsonData() {
-          if let storable = try? type.decode(fromData: jsonData) {
+          do {
+            let storable = try type.decode(fromData: jsonData)
             storables.append(storable)
-          } else {
+          } catch {
+            print(error.localizedDescription)
             jsonData.printUtf8()
             debugFatalError()
           }
@@ -162,9 +168,11 @@ public class FireServer: FuseServer {
       guard let query = snapshot else { return }
       var storables = [Fusable]()
       for jsonData in query.documents.compactMap({$0.jsonData()}) {
-        if let storable = try? type.decode(fromData: jsonData) {
+        do {
+          let storable = try type.decode(fromData: jsonData)
           storables.append(storable)
-        } else {
+        } catch {
+          print(error.localizedDescription)
           jsonData.printUtf8()
           debugFatalError()
         }
